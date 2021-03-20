@@ -130,20 +130,46 @@ _inits[_STATES.DECK_BUILDER] = function()
     _layers[1] = {}
     _layers[2] = {}
     local i = 0
-    for k,v in pairs(_resources.cardImages) do
+    for k,v in pairs(_resources.cardData) do
         local cardimg = board.Object:new{
-            drawable = v,
-            x = 50 + 90*(i%3),
-            y = 50 + 140*math.floor(i/3),
+            drawable = _resources.cardImages[k],
+            x = 400 + 80*(i%8),
+            y = 50 + 120*math.floor(i/8),
             sx = 0.1,
             sy = 0.1,
             onMouseEnter = function(self)
-                self.sx = 0.12
-                self.sy = 0.12
+                local data = _resources.cardData[k]
+                _layers[2][1] = board.Card:new{
+                    drawable = _resources.cardImages[k],
+                    x = 20,
+                    y = 20,
+                    sx = 0.4,
+                    sy = 0.4,
+                    cardData = v
+                }
+
+                _layers[2][2] = board.Object:new{
+                    drawable = love.graphics.newText(_resources.fonts["default"], data.name),
+                    x = 20,
+                    y = 450
+                }
+
+                local statsString = data.health.." "..data.attack.."/"..data.speed.."/"..data.defence.."/"..data.magic
+                _layers[2][3] = board.Object:new{
+                    drawable = love.graphics.newText(_resources.fonts["default"], statsString),
+                    x = 20,
+                    y = 470
+                }
+                _layers[2][4] = board.Object:new{
+                    x = 20,
+                    y = 490,
+                    draw = function(self)
+                        love.graphics.printf(data.cardtext or "", self.x, self.y, 350)
+                    end
+                }
             end,
             onMouseLeave = function(self)
-                self.sx = 0.1
-                self.sy = 0.1
+                -- nothing for now
             end
         }
         i=i+1
