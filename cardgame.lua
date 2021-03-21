@@ -10,6 +10,7 @@ board.Object = {
     onMouseEnter = nil,
     onMouseLeave = nil,
     onLeftClick = nil,
+    onLeftRelease = nil,
     draw = function(self)
         if self.drawable then
             love.graphics.setColor(self.colour.r, self.colour.g, self.colour.b)
@@ -37,24 +38,39 @@ function board.Object:checkCollide()
         self.isMouseIn = true
 
         -- TODO change this so there's not click issues in between states
-        if love.mouse.isDown(1) and self.onLeftClick then
+        if love.mouse.isDown(1) and self.onLeftClick and not self.isGrabbed then
             self:onLeftClick()
+            self.isGrabbed = true
         elseif love.mouse.isDown(2) and self.onRightClick then
             self:onRightClick()
         end
 
-        return true
     else
         if self.isMouseIn and self.onMouseLeave then
             self:onMouseLeave()
         end
         self.isMouseIn = false
-        return false
     end
+
+    if self.isGrabbed and not love.mouse.isDown(1) then
+        self.isGrabbed = false
+        if self.onLeftRelease then self:onLeftRelease() end
+    end
+
+    return self.isMouseIn
 end
 
 function board.Object:setDrawable(drawable)
     self.drawable = drawable
+end
+
+function board.Object:getPos()
+    return self.x, self.y
+end
+
+function board.Object:setPos(x,y)
+    self.x = x
+    self.y = y
 end
 
 board.CardData = {
@@ -67,7 +83,7 @@ board.CardData = {
     cardtext = ""
 }
 
-board.Card = board.Object:new{cardData = nil}
+board.Card = board.Object:new{cardData = {}}
 
 function board.Card:new(arg)
     local ret = arg or board.Object:new()
@@ -105,4 +121,7 @@ function board.Card:getCardText()
     return self.cardData.cardtext or ""
 end
 
+function board.Card:getStatsString()
+    return self:getHealth().." "..self:getAttack().."/"..self:getSpeed().."/"..self:getDefence().."/"..self:getMagic()
+end
 return board
